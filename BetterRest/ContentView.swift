@@ -9,28 +9,38 @@ import CoreML
 import SwiftUI
 
 struct ContentView: View {
-    @State private var wakeUp = Date.now
+    @State private var wakeUp = defaultWakeTime
     @State private var sleepAmount = 8.0
     @State private var coffeeAmount = 1
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
+    static var defaultWakeTime: Date {
+        var components = DateComponents()
+        components.hour = 7
+        components.minute = 0
+        return Calendar.current.date(from: components) ?? .now
+    }
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("何時に起きたいですか?")
+            Form {
+                DatePicker("何時に起きたいですか?", selection: $wakeUp, displayedComponents: .hourAndMinute)
                     .font(.headline)
-                DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-                Text("睡眠時間")
-                    .font(.headline)
-                Stepper("\(sleepAmount.formatted()) 時間", value: $sleepAmount, in: 4...12, step: 0.25)
-                Text("コーヒーの摂取数")
-                    .font(.headline)
-
-                Stepper("\(coffeeAmount) カップ", value: $coffeeAmount, in: 1...20)
+                    .onAppear {
+                        UIDatePicker.appearance().minuteInterval = 10
+                    }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("睡眠時間")
+                        .font(.headline)
+                    Stepper("\(sleepAmount.formatted()) 時間", value: $sleepAmount, in: 4...12, step: 0.25)
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("コーヒーの摂取数")
+                        .font(.headline)
+                    
+                    Stepper("\(coffeeAmount) カップ", value: $coffeeAmount, in: 1...20)
+                }
             }
-            .padding()
             .navigationTitle("BetterRest")
             .toolbar {
                 Button("計算する", action: calculateBedtime)
